@@ -1,0 +1,74 @@
+<html>
+    <head charset="utf-8">
+        <title>
+            Prova de conceito Jogo Multiplayer
+        </title>
+        <style>
+            #screen {
+                border: 10px solid #CCC;
+                image-rendering: pixelated;
+                image-rendering:  crisp-edges;
+                image-rendering: -moz-crisp-edges;
+                width:400px;
+                height: 400px;
+            }
+        </style>
+        <script src="/socket.io/socket.io.js"></script>
+    </head>
+    <body>
+        <canvas id="screen" width="10" height="10"></canvas>
+        <script type="module">
+            import createGame from './game.js'
+            import createKeyboardListener from  './keyboard-listener.js'
+            import renderScreen from './render-screen.js'
+            import playerActions from './playerActions.js'
+            import gameActions from './gameActions.js'
+
+            const socket = io()
+            const game = createGame()
+            const keyboardListener = createKeyboardListener(document) 
+            const playerActionsInstance = playerActions(game)
+            const gameActionsInstance = gameActions(game)
+             
+            keyboardListener.subscribe(playerActionsInstance.main)
+
+            keyboardListener.subscribe((command) => {  
+                socket.emit('action-player', command)
+            })
+
+            socket.on('connect', () => {
+                const playerId = socket.id                
+                const screen = document.getElementById('screen')
+                renderScreen(screen, game, requestAnimationFrame, playerId)                
+            })
+           
+            socket.on('setup', function (state) {
+                const playerId = socket.id
+                game.setState(state)
+                keyboardListener.registerPlayerId(playerId)
+            })
+
+            socket.on('add-player', (command) => {                
+                gameActionsInstance.addPlayer(command)
+            })
+
+            socket.on('remove-player', (command) => {
+                gameActionsInstance.removePlayer(command)
+            })
+
+            socket.on('move-player', (command) => {
+                const playerId  = socket.id
+                playerActionsInstance.main(command, playerId)
+            })
+
+            socket.on('add-fruit', (command) => {
+                gameActionsInstance.addFruit(command)
+            })
+
+            socket.on('remove-fruit', (command) => {
+                gameActionsInstance.removeFruit(command)
+            })
+
+        </script>
+    </body>
+</html>
