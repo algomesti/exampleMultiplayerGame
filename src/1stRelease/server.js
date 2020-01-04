@@ -33,7 +33,16 @@ gameEventsInstance.subscribe(placar)
 
 
 function placar(command) {
-    console.log('placar acionado', command)
+    console.log(command)
+    const player = game.state.players[command.playerId]
+    console.log('player', player)
+    player.score = player.score + 1;
+    const newCommand = {
+        playerId: command.playerId,
+        score: player.score
+    }
+    sockets.emit('update-score', newCommand)
+    console.log('placar acionado', newCommand)
 }
 
 gameActionsInstance.startFruit(2000)
@@ -45,7 +54,8 @@ sockets.on('connection', (socket) => {
     const command = {
         playerId: playerId,
         playerX: game.state.players[playerId].x,
-        playerY: game.state.players[playerId].y
+        playerY: game.state.players[playerId].y,
+        score: 0
     }
     socket.emit('setup', game.state)
     socket.broadcast.emit('add-player', command )

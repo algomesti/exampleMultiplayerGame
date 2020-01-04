@@ -8,10 +8,11 @@ export default function gameActions(game) {
         const playerId = command.playerId
         const playerX = 'playerX' in command ? command.playerX : Math.floor(Math.random() * game.state.screen.width)
         const playerY = 'playerY' in command ? command.playerY : Math.floor(Math.random() * game.state.screen.height)
-        
+        const score = 'score' in command ? command.score : 0
         game.state.players[playerId] = {
             x: playerX,
-            y: playerY
+            y: playerY,
+            score: score
         }
     }
 
